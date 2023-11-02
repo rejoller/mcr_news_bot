@@ -4,7 +4,10 @@ from aiogram.types.input_file import FSInputFile
 import fitz
 import tempfile
 
+import logging
+import asyncio
 
+logging.basicConfig(level=logging.INFO)
 
 from aiogram import Bot, Router, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -34,14 +37,19 @@ def convert_pdf_to_images(pdf_path):
 
 
 
-async def send_files_to_user(user_id: int, files):
-    for file_path in files:
-        if file_path.endswith(('.png', '.jpg', '.jpeg')):
-            await bot.send_photo(chat_id=user_id, photo=FSInputFile(file_path))
-        elif file_path.endswith('.pdf'):
-            temp_files = convert_pdf_to_images(file_path)
-            for temp_file in temp_files:
-                await bot.send_photo(chat_id=user_id, photo=FSInputFile(path=temp_file, filename="image.png"))
-        else:
-            with open(file_path, 'rb') as file:
-                await bot.send_document(chat_id=user_id, document=InputFile(data=file.read(), filename=file_path.split('/')[-1]))
+async def send_files_to_user(user_id, files):
+    try:
+        for file_path in files:
+            if file_path.endswith(('.png', '.jpg', '.jpeg')):
+                await bot.send_photo(chat_id=user_id, photo=FSInputFile(file_path))
+            elif file_path.endswith('.pdf'):
+                temp_files = convert_pdf_to_images(file_path)
+                for temp_file in temp_files:
+                    await bot.send_photo(chat_id=user_id, photo=FSInputFile(path=temp_file, filename="image.png"))
+            else:
+                with open(file_path, 'rb') as file:
+                    await bot.send_document(chat_id=user_id, document=InputFile(data=file.read(), filename=file_path.split('/')[-1]))
+            logging.info(f"File {file_path} sent to user_id: {user_id}")
+    except Exception as e:
+        logging.error(f"Error sending file {file_path} to user_id: {user_id}. Error: {e}")
+

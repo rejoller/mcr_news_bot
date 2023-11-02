@@ -49,11 +49,11 @@ def fetch_and_save_files(user_id: int):
         email_id = msg["Message-ID"]
         print(type(email_id))
 
-        cursor.execute("SELECT * FROM messages WHERE message_id=?", (email_id,))
+        cursor.execute("SELECT * FROM messages WHERE message_id=? AND user_id=?", (email_id, user_id))
         if cursor.fetchone():
             return []
 
-        cursor.execute("INSERT INTO messages(message_id, user_id) VALUES(?, ?)", (email_id, user_id))
+        cursor.execute("INSERT INTO messages(message_id, user_id, delivered) VALUES(?, ?, ?)", (email_id, user_id, 0))
         conn.commit()
         add_message(user_id, False)  # False или True в зависимости от статуса delivered
 
