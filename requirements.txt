@@ -1,0 +1,8 @@
+aiogram
+sqlalchemy
+psycopg2-binary
+icecream
+asyncpg
+redis
+pytz
+greenlet
