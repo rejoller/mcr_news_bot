@@ -20,13 +20,14 @@ class Users(Base):
 class News_cathegories(Base):
     __tablename__ = 'news_cathegories'
     cathegory_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
+    cathegory_short_name: Mapped[str] = mapped_column(String(255))
     cathegory_name: Mapped[str] = mapped_column(String(255))
     cathegory_description: Mapped[str] = mapped_column(String(255), nullable=True)
     
     
     
-class Subscribtions(Base):
-    __tablename__ = 'subscribtions'
+class Subscriptions(Base):
+    __tablename__ = 'subscriptions'
     user_id: Mapped[int] = mapped_column(ForeignKey('users.user_id'), primary_key=True)
     cathegory_id: Mapped[int] = mapped_column(ForeignKey('news_cathegories.cathegory_id'), primary_key=True)
     

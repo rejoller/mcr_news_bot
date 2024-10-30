@@ -163,3 +163,4 @@ cython_debug/
 config.py
 db_config.py
 config.py
+*.ipynb
