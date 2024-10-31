@@ -10,8 +10,9 @@ from aiogram.types import CallbackQuery, Message
 
 
 from aiogram_dialog.widgets.input import MessageInput
-from aiogram_dialog.widgets.kbd import Button, Cancel, Multiselect, Start
+from aiogram_dialog.widgets.kbd import Button, Cancel, Multiselect, Group
 from aiogram_dialog.widgets.text import Const, Format
+
 
 from datetime import datetime
 from icecream import ic
@@ -20,12 +21,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, delete
 from sqlalchemy.dialects.postgresql import insert
 
-from database.models import News_cathegories, Subscriptions
+from database.models import Main_cathegories, Subscriptions, Subcathegories
 
 
 
 class DialogSG(StatesGroup):
-    greeting = State()
+    sub_cathegories = State()
 
 
 async def get_data(dialog_manager: DialogManager, session: AsyncSession, **kwargs):
@@ -36,91 +37,92 @@ async def get_data(dialog_manager: DialogManager, session: AsyncSession, **kwarg
     ic(data)
     
     context = dialog_manager.current_context()
-    
-    if data:
-        data = data.split(':')[1]
-        ic(data)
+    if data and len(data.split(':')) == 3:
+        data = data.split(':')[2]
+        
+        
+        subquery = select(Subcathegories.subcathegory_name, Subcathegories.subcathegory_id).where(Subcathegories.main_cathegory_id == int(data[0]))
+        result = await session.execute(subquery)
+        cathegories = result.all()
+        cathegories_name = [i[0] for i in cathegories]
+        
+        cathegories_id = [i[1] for i in cathegories]
+        
+        
+        
+        
         to_widget = []
-        to_widget = data,
+        to_widget = cathegories_name,
         for i in to_widget:
             context.widget_data.update({'sub': i})
         
-        subquery = select(News_cathegories.cathegory_id).where(News_cathegories.cathegory_name == data)
-        result = await session.execute(subquery)
-        cathegory_id = int(result.first()[0])
+        ic(context)
         
-        ic(cathegory_id)
-        
-    
-        
-        check_query = select(Subscriptions.cathegory_id).where(and_(Subscriptions.user_id == user_id, Subscriptions.cathegory_id == cathegory_id))
+        for id in cathegories_id:
+            check_query = select(Subscriptions.cathegory_id).where(and_(Subscriptions.user_id == user_id, Subscriptions.cathegory_id == id))
         result = await session.execute(check_query)
         response = result.all()
+        ic(response)
         result = [(i[0]) for i in response]
         
         ic(result)
         
-        if cathegory_id in result:
-            delete_query = delete(Subscriptions).where(and_(Subscriptions.cathegory_id == cathegory_id, Subscriptions.user_id == user_id))
+        if cathegories_id in result:
             try:
-                await session.execute(delete_query)
+                for id in cathegories_id:
+                    delete_query = delete(Subscriptions).where(and_(Subscriptions.cathegory_id == id, Subscriptions.user_id == user_id))
+
+                    await session.execute(delete_query)
                 await session.commit()
                 print('deleted')
             except Exception as e:
                 logging.error(e)
+
                 
         else:
-            insert_query = insert(Subscriptions).values(
-                user_id=user_id,
-                cathegory_id=cathegory_id
-            )
             try:
-                await session.execute(insert_query)
+                for id in cathegories_id:
+                    insert_query = insert(Subscriptions).values(
+                        user_id=user_id,
+                        cathegory_id=id
+                    ).on_conflict_do_nothing()
+                    await session.execute(insert_query)
                 await session.commit()
+                await session.close()
                 print('inserted')
             except Exception as e:
                 logging.error(e)
-            
-        
 
-    
-    check_query = select(News_cathegories.cathegory_name) \
-                    .join(Subscriptions, and_(Subscriptions.cathegory_id == News_cathegories.cathegory_id,
+                
+                
+                
+
+            
+    check_query = select(Subcathegories.subcathegory_name) \
+                    .join(Subscriptions, and_(Subscriptions.cathegory_id == Subcathegories.subcathegory_id,
                     Subscriptions.user_id == user_id))
     result = await session.execute(check_query)
     response = result.all()
     result = [(i[0]) for i in response]
+    ic('107', result)
     
     to_widget = []
     to_widget = result,
     for i in to_widget:
         context.widget_data.update({'sub': i})
     
-    
-    
-                    
-    query = select(News_cathegories.cathegory_id, News_cathegories.cathegory_name)
+    query = select(Subcathegories.subcathegory_id, Subcathegories.subcathegory_name)
                     
     result = await session.execute(query)
     response = result.all()
-    
     result = [(i[1]) for i in response]
-   
-    
-    
-
     context.start_data = result
-    
-    
-    
-    
-            
+           
     user_subscriptions = context.start_data
 
-    
-    
+    ic(context)
+    ic(user_subscriptions)
     return {
-
         "user_subscriptions": user_subscriptions
     }
     
@@ -150,30 +152,23 @@ async def on_click(
 
 
 multi = Multiselect(
-    Format("✓ {item}"),  
-    Format("{item}"),
+    Format("✅ {item}"),  
+    Format("☑️{item}"),
     id="sub",
     item_id_getter = lambda x: x,
     items="user_subscriptions",
 )
 
-dialog = Dialog(
+sub_cathegories = Dialog(
     Window(
         Const("Choose cathegory"),
-
-        multi,
+        Group(multi, width=1),
         Cancel(),
-        # Inputs work only in default stack
-        # or via reply to a message with buttons
         MessageInput(name_handler),
-        state=DialogSG.greeting,
+        state=DialogSG.sub_cathegories,
         getter=get_data,
     ),
 )
 
-# async def start(message: Message, session: AsyncSession, dialog_manager: DialogManager):
-#     print('start')
-#     await dialog_manager.start(DialogSG.greeting, mode=StartMode.NEW_STACK)
-    
     
     

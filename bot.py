@@ -13,10 +13,11 @@ from database.db import DataBaseSession
 from database.engine import session_maker, create_db, drop_db
 from handlers import setup_routers
 from handlers.subscribe import handle_subscribe
+
 from users_middleware import UsersMiddleware
 
 
-from keyboards.choise_cath import setup_dialogs, dialog
+from keyboards.choise_subcath import setup_dialogs, sub_cathegories
 
 bot = Bot(BOT_TOKEN)
 
@@ -41,7 +42,8 @@ async def main():
     dp.include_router(router)
     dp.message.middleware(LoggingMiddleware())
     dp.message.middleware(UsersMiddleware())
-    dp.message.register(handle_subscribe, F.text == '/subscribe')
+    dp.callback_query.register(handle_subscribe, F.data.startswith('subcath'))
+    # dp.message.register(handle_subscribe, F.text == '/subscribe')
     print('Бот запущен и готов к приему сообщений')
     logging.info('--------------------Бот запущен и готов к приему сообщений------------------------------')
 

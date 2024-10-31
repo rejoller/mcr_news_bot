@@ -17,19 +17,29 @@ class Users(Base):
 
     
     
-class News_cathegories(Base):
-    __tablename__ = 'news_cathegories'
-    cathegory_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
-    cathegory_short_name: Mapped[str] = mapped_column(String(255))
-    cathegory_name: Mapped[str] = mapped_column(String(255))
-    cathegory_description: Mapped[str] = mapped_column(String(255), nullable=True)
+class Main_cathegories(Base):
+    __tablename__ = 'main_cathegories'
+    main_cathegory_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
+    main_cathegory_short_name: Mapped[str] = mapped_column(String(255))
+    main_cathegory_name: Mapped[str] = mapped_column(String(255))
+    main_cathegory_description: Mapped[str] = mapped_column(String(255), nullable=True)
+    
+    
+    
+class Subcathegories(Base):
+    __tablename__ = 'subcathegories'
+    main_cathegory_id: Mapped[int] = mapped_column(ForeignKey('main_cathegories.main_cathegory_id'), autoincrement=True)
+    subcathegory_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
+    subcathegory_short_name: Mapped[str] = mapped_column(String(255))
+    subcathegory_name: Mapped[str] = mapped_column(String(255))
+    subcathegory_description: Mapped[str] = mapped_column(String(255), nullable=True)
     
     
     
 class Subscriptions(Base):
     __tablename__ = 'subscriptions'
     user_id: Mapped[int] = mapped_column(ForeignKey('users.user_id'), primary_key=True)
-    cathegory_id: Mapped[int] = mapped_column(ForeignKey('news_cathegories.cathegory_id'), primary_key=True)
+    cathegory_id: Mapped[int] = mapped_column(ForeignKey('subcathegories.subcathegory_id'), primary_key=True)
     
     
 class Messages(Base):
@@ -39,6 +49,10 @@ class Messages(Base):
     email_id: Mapped[str] = mapped_column(String(225))
     date_send: Mapped[DateTime] = mapped_column(TIMESTAMP)
     message_text: Mapped[str] = mapped_column(String)
+    
+    
+    
+    
     
 
 
