@@ -9,10 +9,10 @@ def setup_routers() -> Router:
 
     
     router = Router()
-
+    router.include_router(start_command.router)
     router.include_router(subscribe_dialog.router)
     router.include_router(dialog)
-    router.include_router(start_command.router)
+    
     
     router.include_router(get_subscribe.router)
     
