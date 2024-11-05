@@ -165,4 +165,5 @@ db_config.py
 config.py
 *.ipynb
 .DS_Store
-/save_files
+save_files/
+*.png

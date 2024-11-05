@@ -1,25 +1,22 @@
-from aiogram.filters.state import StatesGroup, State
-from aiogram.types import CallbackQuery, Message
-from aiogram import Router, F
-from aiogram.filters.command import Command
 import logging
-
-
-from aiogram_dialog import Window, Dialog, DialogManager, StartMode
-from aiogram_dialog.widgets.kbd import Button, Back, Select, Group, Multiselect
-from aiogram_dialog.widgets.text import Const, Format
-
-
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, delete
-from sqlalchemy.dialects.postgresql import insert
-
-from database.models import Main_cathegories, Subscriptions, Subcathegories
-
-
-from icecream import ic
 import operator
 from typing import Optional
+
+from aiogram import F, Router
+from aiogram.filters.command import Command
+from aiogram.filters.state import State, StatesGroup
+from aiogram.types import CallbackQuery, Message
+
+from aiogram_dialog import Dialog, DialogManager, StartMode, Window
+from aiogram_dialog.widgets.kbd import Back, Group, Multiselect, Select
+from aiogram_dialog.widgets.text import Const, Format
+
+from sqlalchemy import and_, delete, select
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from database.models import Main_categories, Subcategories, Subscriptions
+
 
 
 router = Router()
@@ -39,16 +36,15 @@ async def dialog_get_data(**kwargs):
 async def window1_get_data(
     session: AsyncSession, dialog_manager: DialogManager, **kwargs
 ):
-    print("window1_get_data")
     query = select(
-        Main_cathegories.main_cathegory_name, Main_cathegories.main_cathegory_id
+        Main_categories.main_category_name, Main_categories.main_category_id
     )
     response = await session.execute(query)
     result = response.all()
 
     user_id = dialog_manager.event.from_user.id
 
-    check_query = select(Subscriptions.cathegory_id).where(
+    check_query = select(Subscriptions.category_id).where(
         Subscriptions.user_id == user_id
     )
     check_response = await session.execute(check_query)
@@ -62,22 +58,21 @@ async def window1_get_data(
 
 
     return {
-        "main_cathegories": result,
+        "main_categories": result,
     }
 
 
 async def window2_get_data(session: AsyncSession, dialog_manager: DialogManager, **kwargs):
-    print("window2_get_data")
-    main_cath = dialog_manager.dialog_data["main_cath"]
-    main_cath = int(main_cath)
+    main_cat = dialog_manager.dialog_data["main_cat"]
+    main_cat = int(main_cat)
     query = select(
-        Subcathegories.subcathegory_name, Subcathegories.subcathegory_id
-        ).where(Subcathegories.main_cathegory_id == main_cath)
+        Subcategories.subcategory_name, Subcategories.subcategory_id
+        ).where(Subcategories.main_category_id == main_cat)
     
     response = await session.execute(query)
     result = response.all()
 
-    return {"subcathegories": result}
+    return {"subcategories": result}
 
 
 async def button1_clicked(
@@ -88,20 +83,20 @@ async def button1_clicked(
 ):
     user_id = callback.from_user.id
 
-    main_cath = dialog_manager.event.data.split(":")[1]
-    dialog_manager.dialog_data["main_cath"] = main_cath
+    main_cat = dialog_manager.event.data.split(":")[1]
+    dialog_manager.dialog_data["main_cat"] = main_cat
     dialog_manager.dialog_data["user_id"] = user_id
 
     await dialog_manager.next()
 
 
-async def delete_sub(session: AsyncSession, user_id, cathegory_id):
+async def delete_sub(session: AsyncSession, user_id, category_id):
     print("delete_sub")
     user_id = int(user_id)
-    cathegory_id = int(cathegory_id)
+    category_id = int(category_id)
     query = (delete(Subscriptions).where(
         and_(
-            Subscriptions.user_id == user_id, Subscriptions.cathegory_id == cathegory_id
+            Subscriptions.user_id == user_id, Subscriptions.category_id == category_id
         )
     ))
     try:
@@ -111,10 +106,10 @@ async def delete_sub(session: AsyncSession, user_id, cathegory_id):
         logging.error(e)
 
 
-async def add_sub(session: Optional[AsyncSession], user_id, cathegory_id):
+async def add_sub(session: Optional[AsyncSession], user_id, category_id):
     user_id = int(user_id)
-    cathegory_id = int(cathegory_id)
-    insert_query = (insert(Subscriptions).values(user_id=user_id, cathegory_id=cathegory_id))
+    category_id = int(category_id)
+    insert_query = (insert(Subscriptions).values(user_id=user_id, category_id=category_id))
 
     try:
         await session.execute(insert_query)
@@ -137,17 +132,17 @@ async def button2_clicked(
 
     multiselect = dialog_manager.find("sub")
     
-    cathegory_id = int(category_id)
+    category_id = int(category_id)
     if multiselect.is_checked(category_id):
         await multiselect.set_checked(category_id, True)
         async with session_maker() as session:
 
-            await delete_sub(session, user_id=user_id, cathegory_id=cathegory_id)
+            await delete_sub(session, user_id=user_id, category_id=category_id)
 
     if not multiselect.is_checked(category_id):
         await multiselect.set_checked(category_id, False)
         async with session_maker() as session:
-            await add_sub(session, user_id=user_id, cathegory_id=cathegory_id)
+            await add_sub(session, user_id=user_id, category_id=category_id)
 
     
 
@@ -156,7 +151,7 @@ sel1 = Select(
     Format("{item[0]}"),
     id="main",
     item_id_getter=operator.itemgetter(1),
-    items="main_cathegories",
+    items="main_categories",
     on_click=button1_clicked,
 )
 multi1 = Multiselect(
@@ -164,7 +159,7 @@ multi1 = Multiselect(
     Format("☑️{item[0]}"),
     id="sub",
     item_id_getter=operator.itemgetter(1),
-    items="subcathegories",
+    items="subcategories",
     on_click=button2_clicked,
 )
 
@@ -172,23 +167,25 @@ multi1 = Multiselect(
 dialog = Dialog(
     Window(
         Format(
-            "Добро пожаловать в бота!\nДля проверки своих подписок нажмите на команду /subscribe"
+            "Выберите интересующие категории"
         ),
         Group(sel1, width=1),
         state=MySG.window1,
-        getter=window1_get_data,  # here we specify data getter for window1
+        getter=window1_get_data,  
     ),
     Window(
-        Format("Выберите подкатегории"),
+        Format("Выберите подкатегории для оформления подписки"),
         Group(multi1, width=1),
         Back(text=Const("⏪назад")),
         state=MySG.window2,
-        getter=window2_get_data,  # here we specify data getter for window2
+        getter=window2_get_data, 
     ),
-    getter=dialog_get_data,  # here we specify data getter for dialog
+    getter=dialog_get_data,
+    name = "subscribe"
 )
 
+@router.message(Command('subscribe'), F.chat.type == "private")
+async def handle_subscribe(message: Message, dialog_manager: DialogManager):
+    print('handle_subscribe')
+    await dialog_manager.start(MySG.window1, mode=StartMode.NORMAL)
 
-@router.message(Command("subscribe"), F.chat.type == "private")
-async def handle_start(message: Message, dialog_manager: DialogManager):
-    await dialog_manager.start(MySG.window1, mode=StartMode.RESET_STACK)
