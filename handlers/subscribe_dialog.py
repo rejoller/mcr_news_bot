@@ -21,6 +21,11 @@ from database.models import Main_categories, Subcategories, Subscriptions
 
 router = Router()
 
+@router.message(Command("subscribe"), F.chat.type == "private", ~F.data.startswith("msgcat:"))
+async def handle_subscribe(message: Message, dialog_manager: DialogManager):
+    print('handle_subscribe')
+    await dialog_manager.start(MySG.window1, mode=StartMode.NORMAL)
+
 
 class MySG(StatesGroup):
     window1 = State()
@@ -184,8 +189,4 @@ dialog = Dialog(
     name = "subscribe"
 )
 
-@router.message(Command('subscribe'), F.chat.type == "private")
-async def handle_subscribe(message: Message, dialog_manager: DialogManager):
-    print('handle_subscribe')
-    await dialog_manager.start(MySG.window1, mode=StartMode.NORMAL)
 

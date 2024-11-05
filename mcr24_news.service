@@ -1,0 +1,21 @@
+[Unit]
+Description=News Telegram Bot Service
+#After=network.target
+After=network.target nss-user-lookup.target
+
+[Service]
+Type=simple
+User=support
+WorkingDirectory=/home/support/mcr_news_bot
+ExecStart=/home/support/mcr_news_bot/.venv/bin/python /home/support/mcr_news_bot/bot.py
+
+Restart=always
+RestartSec=10s
+StandardOutput=journal
+StandardError=inherit
+# При необходимости добавьте ограничения ресурсов или переменные окружения
+MemoryLimit=6000M
+# Environment="API_KEY=yourapikey" "ANOTHER_VAR=value"
+
+[Install]
+WantedBy=multi-user.target

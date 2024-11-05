@@ -11,25 +11,28 @@ from handlers import setup_routers
 
 from logging_config import setup_logging
 from logging_middleware import LoggingMiddleware
+from chat_action_mw import ChatActionMiddleware
 
 from users_middleware import UsersMiddleware
 
 
 
 
-bot = Bot(BOT_TOKEN)
 
-storage = RedisStorage.from_url(REDIS_URL, key_builder=DefaultKeyBuilder(with_destiny=True, with_bot_id=True)
-)
+
 
       
 
 async def main():
+    bot = Bot(BOT_TOKEN)
+
+    storage = RedisStorage.from_url(REDIS_URL, key_builder=DefaultKeyBuilder(with_destiny=True, with_bot_id=True))
     setup_logging()
     dp = Dispatcher(storage = storage)
     dp.update.middleware(DataBaseSession(session_pool=session_maker))
+    dp.update.middleware(ChatActionMiddleware())
     # await drop_db()
-    await create_db()
+    # await create_db()
     router = setup_routers()
     dp.include_router(router)
     dp.message.middleware(LoggingMiddleware())
