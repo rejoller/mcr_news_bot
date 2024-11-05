@@ -61,6 +61,8 @@ async def msg_saver(msg):
                 filename = part.get_filename()
                 if filename:
                     filename = decode_file_name(filename)
+                    if not os.path.exists(SAVE_DIR):
+                        os.makedirs(SAVE_DIR)
                     filepath = os.path.join(SAVE_DIR, filename)
                     
                     with open(filepath, 'wb') as file:

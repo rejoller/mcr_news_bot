@@ -29,6 +29,7 @@ async def handle_start(message: Message, session: AsyncSession):
     builder = InlineKeyboardBuilder()
     for id, name in cathegories_id:
         builder.button(text=name, callback_data=f'msgcat:{id}')
+    builder.adjust(1)
     
     await message.answer("Ваши подписки", reply_markup=builder.as_markup())
     
