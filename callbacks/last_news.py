@@ -81,13 +81,13 @@ async def last_news(call: CallbackQuery, session: AsyncSession):
         await call.answer("Отсутствуют материалы для отправки", show_alert=True)
         return
     
-    # await call.answer("Отправляю материал")
+    await call.answer("Отправляю материал")
     msg = await fetch_email_by_id(email_id)
     img_path = await msg_saver(msg)
     if img_path:
         try:
             await call.message.answer_photo(photo=FSInputFile(img_path))
-            await call.answer()
+            # await call.answer()
             if os.path.exists(img_path):
                 os.remove(img_path)
             logging.info(f"Сообщение было отправлено пользователю {call.from_user.id}")

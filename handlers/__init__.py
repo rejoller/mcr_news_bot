@@ -9,6 +9,7 @@ def setup_routers() -> Router:
     
    
     router = Router()
+    router.include_router(start_command.router)
     router.include_router(last_news.router)
 
     router.include_router(my_subscriptions.router)
@@ -16,7 +17,7 @@ def setup_routers() -> Router:
     
     router.include_router(dialog)
     
-    router.include_router(start_command.router)
+    
     setup_dialogs(router)
     
     
