@@ -1,16 +1,12 @@
 from aiogram import Router, F
 from aiogram.types import  Message
-from aiogram.filters import CommandStart, Command
-from aiogram.fsm.context import FSMContext
+from aiogram.filters import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-
-from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sqlalchemy import select
 from database.models import Subscriptions, Subcategories
-from icecream import ic
 
 router = Router()
 
@@ -22,8 +18,13 @@ async def handle_start(message: Message, session: AsyncSession):
         Subscriptions.category_id, Subcategories.subcategory_name).where(
         Subscriptions.user_id == message.from_user.id
     ).join(Subcategories, Subscriptions.category_id == Subcategories.subcategory_id)
+        
     response = await session.execute(query)
     result = response.all()
+    if not result:
+        await message.answer("Вы не подписаны ни на одну категорию, для того чтобы подписаться нажмите на команду /subscribe")
+        return
+    
     cathegories_id = [i for i in result]
     
     builder = InlineKeyboardBuilder()

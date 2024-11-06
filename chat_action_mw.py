@@ -3,7 +3,7 @@ from aiogram.dispatcher.flags import get_flag
 from aiogram.utils.chat_action import ChatActionSender
 from typing import Any, Callable, Dict, Awaitable
 from aiogram.types import Message
-
+from icecream import ic
 
 class ChatActionMiddleware(BaseMiddleware):
     async def __call__(

@@ -1,16 +1,11 @@
 from aiogram import Router, F, flags
-from aiogram.types import  Message, CallbackQuery
-from aiogram.filters import CommandStart, Command
-from aiogram.fsm.context import FSMContext
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import  CallbackQuery
 from aiogram.types import FSInputFile
 
-from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sqlalchemy import select
-from database.models import Subscriptions, Subcategories, Messages
-from icecream import ic
+from database.models import Messages
 import imaplib
 from email.header import decode_header
 from email import message_from_bytes
@@ -37,10 +32,8 @@ async def fetch_email_by_id(EMAIL_ID):
         num = email_nums[-1] 
         result, email_data = await asyncio.to_thread(mail.fetch, num, '(RFC822)')
         raw_email = email_data[0][1]
-        
-        print("Email found:", raw_email)
     else:
-        print("Email not found with the specified Message-ID.")
+        logging.error("Email not found with the specified Message-ID.")
 
     mail.logout()
     return message_from_bytes(raw_email)
@@ -73,8 +66,12 @@ async def msg_saver(msg):
 
 
 
-@router.callback_query(F.data.startswith("msgcat"))
-async def last_news(call: CallbackQuery, session: AsyncSession, flags = {"long_operation":"typing"}):
+@router.callback_query(F.data.startswith("msgcat"), flags = {"long_operation": "upload_photo"})
+async def last_news(call: CallbackQuery, session: AsyncSession):
+    if len(call.data.split(":")) != 2:
+        call.answer("Некорректный запрос", show_alert=True)
+        return
+    
     cat_id = call.data.split(":")[1]
     query = select(Messages.email_id).where(Messages.subcategory_id == int(cat_id[0])).order_by(Messages.date_send.desc()).limit(1)
     response = await session.execute(query)
@@ -84,16 +81,18 @@ async def last_news(call: CallbackQuery, session: AsyncSession, flags = {"long_o
         await call.answer("Отсутствуют материалы для отправки", show_alert=True)
         return
     
-    
-    
-    await call.answer("Отправляю материал")
+    # await call.answer("Отправляю материал")
     msg = await fetch_email_by_id(email_id)
     img_path = await msg_saver(msg)
     if img_path:
-        await call.message.answer_photo(photo=FSInputFile(img_path))
-        await call.answer()
-        if os.path.exists(img_path):
-            os.remove(img_path)
-    else:
-        await call.answer("Возникла ошибка при отправке", show_alert=True)
+        try:
+            await call.message.answer_photo(photo=FSInputFile(img_path))
+            await call.answer()
+            if os.path.exists(img_path):
+                os.remove(img_path)
+            logging.info(f"Сообщение было отправлено пользователю {call.from_user.id}")
+        except Exception as e:
+            await call.answer("Возникла ошибка при отправке", show_alert=True)
+            logging.error(e)
+
     
