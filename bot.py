@@ -11,7 +11,6 @@ from handlers import setup_routers
 
 from logging_config import setup_logging
 from logging_middleware import LoggingMiddleware
-from chat_action_mw import ChatActionMiddleware
 
 from users_middleware import UsersMiddleware
 
@@ -30,7 +29,7 @@ async def main():
     setup_logging()
     dp = Dispatcher(storage = storage)
     dp.update.middleware(DataBaseSession(session_pool=session_maker))
-    dp.update.middleware(ChatActionMiddleware())
+    
     # await drop_db()
     # await create_db()
     router = setup_routers()
