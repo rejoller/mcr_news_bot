@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
-from sqlalchemy import ForeignKey, String, BIGINT, TIMESTAMP, DateTime, BOOLEAN
+from sqlalchemy import ForeignKey, String, BIGINT, TIMESTAMP, DateTime, BOOLEAN, INTEGER
 
 class Base(DeclarativeBase):
     pass
@@ -49,6 +49,13 @@ class Messages(Base):
     email_id: Mapped[str] = mapped_column(String(225))
     date_send: Mapped[DateTime] = mapped_column(TIMESTAMP)
     message_text: Mapped[str] = mapped_column(String, nullable=True)
+    subcategory_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('subcategories.subcategory_id'))
+    
+    
+class Manager(Base):
+    __tablename__ = 'category_manager'
+    manager_id: Mapped[int] = mapped_column(INTEGER, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('users.user_id'))
     subcategory_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('subcategories.subcategory_id'))
     
     

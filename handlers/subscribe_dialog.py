@@ -10,7 +10,6 @@ from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import Dialog, DialogManager, StartMode, Window
 from aiogram_dialog.widgets.kbd import Back, Group, Multiselect, Select
 from aiogram_dialog.widgets.text import Const, Format
-from aiogram_dialog.api.entities import MediaAttachment, MediaId
 
 from sqlalchemy import and_, delete, select
 from sqlalchemy.dialects.postgresql import insert

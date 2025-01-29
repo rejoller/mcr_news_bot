@@ -167,3 +167,4 @@ config.py
 .DS_Store
 save_files/
 *.png
+*.xlsx

@@ -1,0 +1,30 @@
+services:
+  redis:
+    image: redis:7.2-bookworm
+    expose:
+      - 6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 30s
+      retries: 50
+      start_period: 30s
+    restart: always
+
+
+      
+  bot:
+    build:
+      dockerfile: Dockerfile
+    container_name: news_tg_bot
+    stop_signal: SIGINT
+    network_mode: "host"
+    volumes: 
+      - /Users/rejoller/mcr_news_bot/mcr_news_bot/bot_log:/app/bot_log
+    ports:
+      - "5432:5432"
+    restart: always
+    command: ['python', 'bot.py']
+    depends_on:
+      - redis
+

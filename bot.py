@@ -31,7 +31,7 @@ async def main():
     dp.update.middleware(DataBaseSession(session_pool=session_maker))
     
     # await drop_db()
-    # await create_db()
+    await create_db()
     router = setup_routers()
     dp.include_router(router)
     dp.message.middleware(LoggingMiddleware())

@@ -1,6 +1,8 @@
 from typing import Callable, Dict, Any, Awaitable
+
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
+
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from icecream import ic
 
@@ -18,4 +20,5 @@ class DataBaseSession(BaseMiddleware):
     ) -> Any:
         async with self.session_pool() as session:
             data['session'] = session
+            ic(event)
             return await handler(event, data)
