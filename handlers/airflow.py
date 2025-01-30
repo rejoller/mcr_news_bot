@@ -8,6 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 from filters.admins import AdminFilter
+from icecream import ic
+from kb.show_dags import markup
 
 router = Router()
 
@@ -16,15 +18,8 @@ router = Router()
 @router.message(Command('airflow'), F.chat.type == "private")
 async def handle_start(message: Message, session: AsyncSession):
     
+    
+    await message.answer("Airflow", reply_markup=markup)
 
-    
-    text = 'посмотреть информацию о DAG'
-    markup = InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(text=text, callback_data='dag_info')
-        ]
-    ])
-    
-    await message.answer(text, reply_markup=markup)
     
     
