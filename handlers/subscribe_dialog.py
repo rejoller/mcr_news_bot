@@ -21,7 +21,7 @@ from database.models import Main_categories, Subcategories, Subscriptions
 
 router = Router()
 
-@router.message(Command("subscribe"), F.chat.type == "private", ~F.data.startswith("msgcat:"))
+@router.message(Command("subscribe"), F.chat.type == "private", ~F.data.startswith("msgcat:"), ~F.data.startswith("airflow"), ~F.data.startswith("dag"), ~F.data.startswith("new"))
 async def handle_subscribe(message: Message, dialog_manager: DialogManager):
     print('handle_subscribe')
     await dialog_manager.start(MySG.window1, mode=StartMode.NORMAL)
