@@ -30,7 +30,7 @@ async def main():
     dp = Dispatcher(storage = storage)
     dp.update.middleware(DataBaseSession(session_pool=session_maker))
     
-    # await drop_db()
+
     await create_db()
     router = setup_routers()
     dp.include_router(router)
