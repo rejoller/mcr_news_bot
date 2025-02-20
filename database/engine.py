@@ -3,7 +3,8 @@ from database.db_config import (user, password, host, port, database)
 from database.models import Base
 
 
-DBURL=f'postgresql+asyncpg://{user}:{password}@{host}:{port}/{database}'
+DBURL=f'postgresql+psycopg_async://{user}:{password}@{host}:{port}/{database}'
+
 
 
 engine = create_async_engine(DBURL, echo=False)

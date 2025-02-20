@@ -99,8 +99,8 @@ async def get_dags(call: CallbackQuery, session: AsyncSession, bot: Bot):
             
         
             
-        text += f'({is_paused})<b> {news_dag['dag_display_name']}</b>\n'
-        text += f'<b>Описание: </b> {news_dag['description']} \n'
+        text += f'({is_paused})<b> {news_dag["dag_display_name"]}</b>\n'
+        text += f'<b>Описание: </b> {news_dag["description"]} \n'
         text += f'<b>Владельцы: </b> {users}\n\n'
         if last_run_state != 'running':
             text += "<b>Статус: </b> 🕙Ждет запуска\n"
