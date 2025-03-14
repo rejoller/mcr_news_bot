@@ -2,7 +2,9 @@ import logging
 import datetime
 import pytz
 import sys
-from config import LOGGING_PATH
+import os
+from config import LOGGING_DIR
+
 
 class Formatter(logging.Formatter):
     def converter(self, timestamp):
@@ -25,6 +27,10 @@ class Formatter(logging.Formatter):
 
 
 def setup_logging():
+    if not os.path.exists(LOGGING_DIR):
+        os.makedirs(LOGGING_DIR)
+    LOGGING_PATH = os.path.join(LOGGING_DIR, "bot.log")
+    
     file_handler = logging.FileHandler(LOGGING_PATH)
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(

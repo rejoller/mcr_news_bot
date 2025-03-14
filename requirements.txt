@@ -7,3 +7,6 @@ redis
 pytz
 greenlet
 aiogram_dialog
+psycopg
+pandas
+requests
